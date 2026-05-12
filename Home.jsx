@@ -629,7 +629,7 @@ const Hero = () => {
 
       <div style={heroContentStyles}>
         <h1 className="hero-tagline" style={heroTaglineStyles}>
-          Your Vision, Elevated, Experience More
+          Your Vision, Elevated, Experience More++++
         </h1>
 
         <p className="hero-description" style={heroDescriptionStyles}>
