@@ -529,7 +529,7 @@ const Hero = () => {
     "https://res.cloudinary.com/dekdxx6yx/image/upload/v1778591270/ChatGPT_Image_May_12_2026_04_07_16_PM_ezt41n.png";
 
   const videoUrl =
-    "https://res.cloudinary.com/dekdxx6yx/video/upload/v1778607025/homescreenvideo_h282qv.mp4";
+    "";
 
   useEffect(() => {
     const heroTagline = document.querySelector(".hero-tagline");
