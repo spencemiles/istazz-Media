@@ -161,9 +161,19 @@ const Header = () => {
   );
 };
 
-// Hero Section Component
+// Hero Section Component with optimized video loading - shows poster image instantly, swaps to video when ready
 const Hero = () => {
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [showPoster, setShowPoster] = useState(true);
+  const videoRef = useRef(null);
+  
+  // Poster image URL - shows instantly on page load
+  const posterImageUrl = "https://res.cloudinary.com/dekdxx6yx/image/upload/v1778591270/ChatGPT_Image_May_12_2026_04_07_16_PM_ezt41n.png";
+  const videoUrl = "https://res.cloudinary.com/dekdxx6yx/video/upload/homescreenvideo_h282qv.mp4";
+  
   useEffect(() => {
+    // Reveal animations for hero content
     const heroTagline = document.querySelector('.hero-tagline');
     const heroDescription = document.querySelector('.hero-description');
     const ctaButton = document.querySelector('.hero .cta-button');
@@ -171,21 +181,107 @@ const Hero = () => {
     if (heroTagline) heroTagline.classList.add('reveal');
     if (heroDescription) heroDescription.classList.add('reveal');
     if (ctaButton) ctaButton.classList.add('reveal');
+    
+    // Create a video element to preload in background
+    const preloadVideo = document.createElement('video');
+    preloadVideo.preload = 'auto';
+    preloadVideo.src = videoUrl;
+    preloadVideo.muted = true;
+    
+    // When video is fully loaded and ready to play
+    const handleVideoReady = () => {
+      console.log('Video fully loaded and ready');
+      setVideoLoaded(true);
+      
+      // Small delay for smooth crossfade
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.play()
+            .then(() => {
+              setShowPoster(false);
+            })
+            .catch(e => console.log('Autoplay prevented:', e));
+        }
+      }, 100);
+    };
+    
+    const handleVideoCanPlay = () => {
+      // Video has enough data to start playing
+      if (preloadVideo.readyState >= 3) { // HAVE_FUTURE_DATA or HAVE_ENOUGH_DATA
+        handleVideoReady();
+      }
+    };
+    
+    const handleVideoError = () => {
+      console.error('Video failed to load');
+      setVideoError(true);
+      setShowPoster(false); // Hide poster if video fails
+    };
+    
+    preloadVideo.addEventListener('canplaythrough', handleVideoReady);
+    preloadVideo.addEventListener('canplay', handleVideoCanPlay);
+    preloadVideo.addEventListener('error', handleVideoError);
+    
+    // Start loading video in background
+    preloadVideo.load();
+    
+    // Cleanup
+    return () => {
+      preloadVideo.removeEventListener('canplaythrough', handleVideoReady);
+      preloadVideo.removeEventListener('canplay', handleVideoCanPlay);
+      preloadVideo.removeEventListener('error', handleVideoError);
+      preloadVideo.src = '';
+    };
   }, []);
 
+  // Force hide poster when video is fully loaded and ready
+  useEffect(() => {
+    if (videoLoaded && videoRef.current) {
+      const timer = setTimeout(() => {
+        setShowPoster(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [videoLoaded]);
+  
   return (
     <section className="hero">
-      <video autoPlay muted loop playsInline preload="metadata" className="hero-image">
-        <source src="https://res.cloudinary.com/dekdxx6yx/video/upload/homescreenvideo_h282qv.mp4" type="video/mp4" />
+      {/* Poster image - shows instantly on page load, hidden when video is ready */}
+      <div 
+        className={`hero-poster ${showPoster && !videoLoaded ? 'poster-visible' : 'poster-hidden'}`}
+        style={{ backgroundImage: `url(${posterImageUrl})` }}
+      />
+      
+      {/* Video element - starts hidden, fades in when loaded */}
+      <video
+        ref={videoRef}
+        muted
+        loop
+        playsInline
+        preload="none"
+        className={`hero-video ${videoLoaded && !showPoster ? 'video-visible' : 'video-hidden'}`}
+      >
+        <source src={videoUrl} type="video/mp4" />
         Your browser does not support HTML5 video.
       </video>
+      
+      {/* Fallback image if video fails */}
+      {videoError && (
+        <div 
+          className="hero-fallback"
+          style={{ backgroundImage: `url(${posterImageUrl})` }}
+        />
+      )}
+      
       <div className="hero-overlay"></div>
+      
       <img 
         src="https://res.cloudinary.com/dekdxx6yx/image/upload/v1760854267/logo_fx72mz.webp"
         alt="Istazz Logo"
         className="istazz-here-logo"
         loading="eager"
       />
+      
       <div className="hero-content">
         <h1 className="hero-tagline">Your Vision, Elevated, Experience More</h1>
         <p className="hero-description">We transform ideas into immersive visual experiences through cinematic storytelling, innovative design, and cutting-edge production.</p>
@@ -410,25 +506,6 @@ const Footer = () => {
     }, 3000);
   };
 
-  const handleNewsletterSubmit = (e) => {
-    e.preventDefault();
-    const email = e.target.querySelector('input').value.trim();
-    
-    if (!email) {
-      showToast('Please enter your email address', 'error');
-      return;
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      showToast('Please enter a valid email address', 'error');
-      return;
-    }
-    
-    showToast('Thank you for subscribing to our newsletter!', 'success');
-    e.target.querySelector('input').value = '';
-  };
-
   return (
     <footer className="footer">
       <div className="container">
@@ -500,7 +577,7 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="tel:+254725116708">
+                <a href="mailto:info@istazzmedia.co.ke">
                   <i className="bi bi-envelope"></i>
                   <span>info@istazzmedia.co.ke<br /><small>Email Us</small></span>
                 </a>
