@@ -516,57 +516,16 @@ const Header = () => {
   );
 };
 
-// Hero Section Component - Mobile: image background, Desktop: video background
-// Hero Section Component - Mobile: image background, Desktop: video background
+// Hero Section Component - Static background image for all devices
 const Hero = () => {
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const [videoError, setVideoError] = useState(false);
-  const videoRef = useRef(null);
   const { width } = useWindowSize();
   const isMobile = width <= 768;
 
-  const mobileBackgroundImage =
-    "https://res.cloudinary.com/dekdxx6yx/image/upload/v1778591270/ChatGPT_Image_May_12_2026_04_07_16_PM_ezt41n.png";
+  // Static background image URL (replaces video on all devices)
+  const backgroundImageUrl =
+    "https://res.cloudinary.com/dekdxx6yx/image/upload/v1778607025/ChatGPT_Image_May_12_2026_08_29_46_PM_yyf9gh.png";
 
-  const videoUrl =
-    "https://res.cloudinary.com/dekdxx6yx/video/upload/v1778607025/homescreenvideo_h282qv.mp4";
-
-  useEffect(() => {
-    const heroTagline = document.querySelector(".hero-tagline");
-    const heroDescription = document.querySelector(".hero-description");
-    const ctaButton = document.querySelector(".hero .cta-button");
-
-    heroTagline?.classList.add("reveal");
-    heroDescription?.classList.add("reveal");
-    ctaButton?.classList.add("reveal");
-
-    if (!isMobile) {
-      const video = document.createElement("video");
-      video.src = videoUrl;
-      video.preload = "auto";
-      video.muted = true;
-      video.playsInline = true;
-
-      const handleReady = () => {
-        setVideoLoaded(true);
-        videoRef.current?.play().catch(() => {});
-      };
-
-      const handleError = () => {
-        setVideoError(true);
-      };
-
-      video.addEventListener("canplaythrough", handleReady);
-      video.addEventListener("error", handleError);
-      video.load();
-
-      return () => {
-        video.removeEventListener("canplaythrough", handleReady);
-        video.removeEventListener("error", handleError);
-        video.src = "";
-      };
-    }
-  }, [isMobile]);
+  // Removed video logic; now only static image background
 
   const heroStyles = {
     height: "100vh",
@@ -577,12 +536,12 @@ const Hero = () => {
     overflow: "hidden",
   };
 
-  const mobileBgStyles = {
+  const bgImageStyles = {
     position: "absolute",
     inset: 0,
     width: "100%",
     height: "100%",
-    backgroundImage: `url(${mobileBackgroundImage})`,
+    backgroundImage: `url(${backgroundImageUrl})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     zIndex: 0,
@@ -605,7 +564,6 @@ const Hero = () => {
     color: "white",
   };
 
-  // 🔥 REDUCED TITLE SIZE
   const heroTaglineStyles = {
     fontSize: isMobile ? "20px" : "38px",
     fontWeight: 700,
@@ -615,7 +573,6 @@ const Hero = () => {
     textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
   };
 
-  // 🔥 REDUCED DESCRIPTION SIZE
   const heroDescriptionStyles = {
     fontSize: isMobile ? "12px" : "15px",
     marginBottom: "32px",
@@ -646,39 +603,21 @@ const Hero = () => {
     zIndex: 15,
   };
 
+  // Ensure reveal animations
+  useEffect(() => {
+    const heroTagline = document.querySelector(".hero-tagline");
+    const heroDescription = document.querySelector(".hero-description");
+    const ctaButton = document.querySelector(".hero .cta-button");
+
+    heroTagline?.classList.add("reveal");
+    heroDescription?.classList.add("reveal");
+    ctaButton?.classList.add("reveal");
+  }, []);
+
   return (
     <section style={heroStyles}>
-      {isMobile ? (
-        <div style={mobileBgStyles} />
-      ) : (
-        <>
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              zIndex: 0,
-              opacity: videoLoaded ? 1 : 0,
-              transition: "opacity 0.6s ease",
-            }}
-            onCanPlay={() => setVideoLoaded(true)}
-            onError={() => setVideoError(true)}
-          >
-            <source src={videoUrl} type="video/mp4" />
-          </video>
-
-          {videoError && <div style={mobileBgStyles} />}
-        </>
-      )}
-
+      {/* Static background image for all devices */}
+      <div style={bgImageStyles} />
       <div style={heroOverlayStyles}></div>
 
       <img
